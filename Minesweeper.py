@@ -3,8 +3,8 @@ import random
 pygame.init()
 import os
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Récupère le chemin du script
-image_path = os.path.join(BASE_DIR, "Sprites", "empty.png")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) 
+image_path = os.path.join(BASE_DIR, "assets/Sprites", "empty.png")
 
 bg_color = (192, 192, 192)
 grid_color = (128, 128, 128)
@@ -22,21 +22,22 @@ timer = pygame.time.Clock()  # Create timer
 pygame.display.set_caption("Minesweeper")  # S Set the caption of window
 
 # Import files
-spr_emptyGrid = pygame.image.load("Sprites/empty.png")
-spr_flag = pygame.image.load("Sprites/flag.png")
-spr_grid = pygame.image.load("Sprites/Grid.png")
-spr_grid1 = pygame.image.load("Sprites/grid1.png")
-spr_grid2 = pygame.image.load("Sprites/grid2.png")
-spr_grid3 = pygame.image.load("Sprites/grid3.png")
-spr_grid4 = pygame.image.load("Sprites/grid4.png")
-spr_grid5 = pygame.image.load("Sprites/grid5.png")
-spr_grid6 = pygame.image.load("Sprites/grid6.png")
-spr_grid7 = pygame.image.load("Sprites/grid7.png")
-spr_grid8 = pygame.image.load("Sprites/grid8.png")
-spr_grid7 = pygame.image.load("Sprites/grid7.png")
-spr_mine = pygame.image.load("Sprites/mine.png")
-spr_mineClicked = pygame.image.load("Sprites/mineClicked.png")
-spr_mineFalse = pygame.image.load("Sprites/mineFalse.png")
+spr_emptyGrid = pygame.image.load("assets/Sprites/empty.png")
+spr_flag = pygame.image.load("assets/Sprites/flag.png")
+spr_grid = pygame.image.load("assets/Sprites/Grid.png")
+spr_grid1 = pygame.image.load("assets/Sprites/grid1.png")
+spr_grid2 = pygame.image.load("assets/Sprites/grid2.png")
+spr_grid3 = pygame.image.load("assets/Sprites/grid3.png")
+spr_grid4 = pygame.image.load("assets/Sprites/grid4.png")
+spr_grid5 = pygame.image.load("assets/Sprites/grid5.png")
+spr_grid6 = pygame.image.load("assets/Sprites/grid6.png")
+spr_grid7 = pygame.image.load("assets/Sprites/grid7.png")
+spr_grid8 = pygame.image.load("assets/Sprites/grid8.png")
+spr_grid7 = pygame.image.load("assets/Sprites/grid7.png")
+spr_mine = pygame.image.load("assets/Sprites/mine.png")
+spr_question = pygame.image.load("assets/Sprites/question_mark.png")
+spr_mineClicked = pygame.image.load("assets/Sprites/mineClicked.png")
+spr_mineFalse = pygame.image.load("assets/Sprites/mineFalse.png")
 
 
 # Create global values
@@ -61,7 +62,7 @@ class Grid:
         self.mineClicked = False  # Bool var to check if the grid is clicked and its a mine
         self.mineFalse = False  # Bool var to check if the player flagged the wrong grid
         self.flag = False  # Bool var to check if player flagged the grid
-        self.question = False # Bool var to check if player questioned the grid
+        self.question = False #Bool var to check if player questioned the grid 
         # Create rectObject to handle drawing and collisions
         self.rect = pygame.Rect(border + self.xGrid * grid_size, top_border + self.yGrid * grid_size, grid_size, grid_size)
         self.val = type  # Value of the grid, -1 is mine
@@ -100,6 +101,8 @@ class Grid:
             else:
                 if self.flag:
                     gameDisplay.blit(spr_flag, self.rect)
+                elif self.question:
+                    gameDisplay.blit(spr_question, self.rect)
                 else:
                     gameDisplay.blit(spr_grid, self.rect)
 
@@ -197,20 +200,22 @@ def gameLoop():
                                     # Toggle flag off
                                     if j.flag:
                                         mineLeft += 1
-                                        j.falg = False
+                                        j.flag = False
                                     # If it's a mine
                                     if j.val == -1:
                                         gameState = "Game Over"
                                         j.mineClicked = True
                                 elif event.button == 3:
-                                    # If the player right clicked
                                     if not j.clicked:
-                                        if j.flag:
-                                            j.flag = False
-                                            mineLeft += 1
-                                        else:
+                                        if not j.flag and not j.question:
                                             j.flag = True
                                             mineLeft -= 1
+                                        elif j.flag and not j.question:
+                                            j.flag = False
+                                            j.question = True
+                                            mineLeft += 1
+                                        elif not j.flag and j.question:
+                                            j.question = False
 
         # Check if won
         w = True
@@ -254,13 +259,15 @@ def menu():
     input_width = ""
     input_height = ""
     input_mines = ""
-    active_input = None  # Tracks which input field is active
+    active_input = None
+    error_message = ""
 
     # Define input box positions
     box_width, box_height = 140, 40
     width_box = pygame.Rect(display_width // 2 - box_width // 2, 150, box_width, box_height)
     height_box = pygame.Rect(display_width // 2 - box_width // 2, 220, box_width, box_height)
     mines_box = pygame.Rect(display_width // 2 - box_width // 2, 290, box_width, box_height)
+    start_box = pygame.Rect(display_width // 2 - 100, 360, 200, 50)
 
     while running:
         gameDisplay.fill(bg_color)
@@ -275,18 +282,20 @@ def menu():
         pygame.draw.rect(gameDisplay, (255, 255, 255), width_box, 2 if active_input == "width" else 1)
         pygame.draw.rect(gameDisplay, (255, 255, 255), height_box, 2 if active_input == "height" else 1)
         pygame.draw.rect(gameDisplay, (255, 255, 255), mines_box, 2 if active_input == "mines" else 1)
+        pygame.draw.rect(gameDisplay, (0, 200, 0), start_box)
+        
+        # Render text
+        screen_text = pygame.font.SysFont("Calibri", 30).render("START", True, (255, 255, 255))
+        gameDisplay.blit(screen_text, (start_box.x + 70, start_box.y + 15))
 
-        # Render user input inside boxes
-        screen_text = pygame.font.SysFont("Calibri", 30).render(input_width, True, (0, 0, 0))
-        gameDisplay.blit(screen_text, (width_box.x + 10, width_box.y + 5))
+        # Render user input
+        for box, text in [(width_box, input_width), (height_box, input_height), (mines_box, input_mines)]:
+            screen_text = pygame.font.SysFont("Calibri", 30).render(text, True, (0, 0, 0))
+            gameDisplay.blit(screen_text, (box.x + 10, box.y + 5))
 
-        screen_text = pygame.font.SysFont("Calibri", 30).render(input_height, True, (0, 0, 0))
-        gameDisplay.blit(screen_text, (height_box.x + 10, height_box.y + 5))
-
-        screen_text = pygame.font.SysFont("Calibri", 30).render(input_mines, True, (0, 0, 0))
-        gameDisplay.blit(screen_text, (mines_box.x + 10, mines_box.y + 5))
-
-        drawText("Click a box to edit. Press ENTER to start.", 25, 160)
+        # Error message
+        if error_message:
+            drawText(error_message, 25, 200)
 
         pygame.display.update()
 
@@ -296,30 +305,50 @@ def menu():
                 quit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                # Check if user clicked a box
+                active_input = None
                 if width_box.collidepoint(event.pos):
                     active_input = "width"
                 elif height_box.collidepoint(event.pos):
                     active_input = "height"
                 elif mines_box.collidepoint(event.pos):
                     active_input = "mines"
+                elif start_box.collidepoint(event.pos) and input_width and input_height and input_mines:
+                    try:
+                        w = int(input_width)
+                        h = int(input_height)
+                        m = int(input_mines)
+                        
+                        if w < 1 or h < 1 or m < 1:
+                            error_message = "Values must be positive"
+                        elif m >= w * h:
+                            error_message = "Too many mines"
+                        else:
+                            game_width = w
+                            game_height = h
+                            numMine = m
+                            display_width = max(300, grid_size * game_width + border * 2)
+                            display_height = max(400, grid_size * game_height + border + top_border)
+                            gameDisplay = pygame.display.set_mode((display_width, display_height))
+                            running = False
+                            gameLoop()
+                    except ValueError:
+                        error_message = "Invalid numbers"
 
-            if event.type == pygame.KEYDOWN:
-                if active_input:
-                    if event.key == pygame.K_BACKSPACE:
-                        if active_input == "width":
-                            input_width = input_width[:-1]
-                        elif active_input == "height":
-                            input_height = input_height[:-1]
-                        elif active_input == "mines":
-                            input_mines = input_mines[:-1]
-                    elif event.unicode.isdigit():
-                        if active_input == "width":
-                            input_width += event.unicode
-                        elif active_input == "height":
-                            input_height += event.unicode
-                        elif active_input == "mines":
-                            input_mines += event.unicode
+            if event.type == pygame.KEYDOWN and active_input:
+                if event.key == pygame.K_BACKSPACE:
+                    if active_input == "width":
+                        input_width = input_width[:-1]
+                    elif active_input == "height":
+                        input_height = input_height[:-1]
+                    elif active_input == "mines":
+                        input_mines = input_mines[:-1]
+                elif event.unicode.isdigit():
+                    if active_input == "width":
+                        input_width += event.unicode
+                    elif active_input == "height":
+                        input_height += event.unicode
+                    elif active_input == "mines":
+                        input_mines += event.unicode
 
                 if event.key == pygame.K_RETURN and input_width and input_height and input_mines:
                     game_width = int(input_width)
