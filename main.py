@@ -9,7 +9,8 @@ class Game:
         self.clock = pygame.time.Clock()
         
     def new(self):
-        pass
+        self.board = Board()
+        self.board.display_board()
     
     def run(self):
         self.playing = True
