@@ -1,7 +1,7 @@
 import random
 import pygame
 
-from game.constants import BLACK, BORDER, GRID_SIZE, TOP_BORDER
+from .constants import BLACK, BORDER, GRID_SIZE, TOP_BORDER
 from .grid import Grid
 
 class GameCore:
@@ -17,6 +17,10 @@ class GameCore:
         self.t = 0
 
     def initialize_grid(self, width, height, mines):
+        print(f"\n[DEBUG] Initializing grid with:")
+        print(f"Width: {width}")
+        print(f"Height: {height}")
+        print(f"Mines: {mines}\n")
         self.game_width = width
         self.game_height = height
         self.num_mine = mines
@@ -25,6 +29,8 @@ class GameCore:
         self.mines = []
         self.first_click = True
         self.t = 0
+        
+        print(f"[DEBUG] Creating empty grid of size {width}x{height}")
         
         # Create empty grid
         for j in range(height):
@@ -92,6 +98,7 @@ class GameCore:
         return False
 
     def draw(self, gameDisplay, sprites):
+        print(f"[DEBUG DRAW] Drawing grid - Game state: {self.game_state}")
         # Draw grid
         for row in self.grid:
             for cell in row:

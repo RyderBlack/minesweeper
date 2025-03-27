@@ -45,8 +45,10 @@ def main():
             
             if in_menu:
                 result = menu.handle_event(event)
+                print(f"Menu handle_event returned: {result}")  # Menu handle_event returned: None if not
                 if result:  # User clicked START with valid inputs
                     width, height, mines = result
+                    print(f"\n[DEBUG MAIN] Starting game with: {width}x{height}, {mines} mines") 
                     game.initialize_grid(width, height, mines)
                     
                     # Resize display
@@ -56,7 +58,9 @@ def main():
                     ))
                     menu.gameDisplay = gameDisplay
                     in_menu = False
+                    print("Game started!") 
             else:
+                print("[DEBUG] Game start failed - invalid result")
                 if game.game_state in ["Game Over", "Win"]:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_r:

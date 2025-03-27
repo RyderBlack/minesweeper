@@ -62,9 +62,14 @@ class Menu:
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            self.handle_mouse_click(event.pos)
+            result = self.handle_mouse_click(event.pos)
+            print(f"Returned from handle_mouse_click: {result}") 
+            return result  # Directly return the result from handle_mouse_click !!
         elif event.type == pygame.KEYDOWN and self.active_input:
             self.handle_key_input(event)
+        
+        return None  # Only return None if no valid result !!!!!!!!!
+
 
     def handle_mouse_click(self, pos):
         box_width, box_height = 140, 40
@@ -92,10 +97,13 @@ class Menu:
             self.active_input = "height"
         elif mines_box.collidepoint(pos):
             self.active_input = "mines"
-        elif start_box.collidepoint(pos) and self.input_width and self.input_height and self.input_mines:
-            print("work")
-            return self.validate_inputs()
-        return None
+        elif start_box.collidepoint(pos):
+            print("work")  # This shows we're clicking START
+            result = self.validate_inputs()
+            print(f"Validation result: {result}")  
+            return result
+
+        return None    
 
     def handle_key_input(self, event):
         if event.key == pygame.K_BACKSPACE:
@@ -119,15 +127,21 @@ class Menu:
             h = int(self.input_height)
             m = int(self.input_mines)
             
+            print(f"[DEBUG] Validating: Width={w}, Height={h}, Mines={m}")
+            
             if w < 1 or h < 1 or m < 1:
+                print("[DEBUG] Validation failed: Negative values")
                 self.error_message = "Values must be positive"
                 return None
             elif m >= w * h:
+                print("[DEBUG] Validation failed: Too many mines")
                 self.error_message = "Too many mines"
                 return None
             else:
+                print("[DEBUG] Validation successful!")
                 return w, h, m
         except ValueError:
+            print("[DEBUG] Validation failed: Invalid numbers")
             self.error_message = "Invalid numbers"
             return None
 
