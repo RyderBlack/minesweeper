@@ -15,9 +15,9 @@ class Menu:
         
         # Draw text labels
         self.draw_text("Set Grid Size", 40, -340)
-        self.draw_text("Width:", 30, -300)
-        self.draw_text("Height:", 30, -200)
-        self.draw_text("Mines:", 30, -100)
+        self.draw_text("Width:", 30, -295)
+        self.draw_text("Height:", 30, -195)
+        self.draw_text("Mines:", 30, -95)
 
         # Draw input boxes
         box_width, box_height = 140, 40

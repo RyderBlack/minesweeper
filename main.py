@@ -5,7 +5,12 @@ from game.core import GameCore
 from game.menu import Menu
 from game.main_menu import MainMenu
 from game.constants import *
-
+# Presets pour les niveaux de difficulté
+DIFFICULTY_PRESETS = {
+    "Facile": {"width": 10, "height": 10, "mines": 15},
+    "Moyen": {"width": 16, "height": 16, "mines": 64},
+    "Difficile": {"width": 20, "height": 20, "mines": 120}
+}
 def load_sprites():
     sprites = {}
     for name in SPRITE_NAMES:
@@ -49,9 +54,17 @@ def main():
                 selected_option = main_menu.handle_event(event)
                 if selected_option == "Sandbox":
                     current_screen = "sandbox_menu"
-                elif selected_option in ["Facile", "Moyen", "Difficile", "Hall des dieux"]:
-                    print(f"Lancer le mode : {selected_option}")
-                    # Logique supplémentaire à ajouter pour ces modes
+                elif selected_option in DIFFICULTY_PRESETS:
+                # Utiliser les préréglages pour initialiser la grille
+                    preset = DIFFICULTY_PRESETS[selected_option]
+                    game.initialize_grid(preset["width"], preset["height"], preset["mines"])
+                    
+                    # Redimensionner l'affichage
+                    gameDisplay = pygame.display.set_mode((
+                        GRID_SIZE * preset["width"] + BORDER * 2,
+                        GRID_SIZE * preset["height"] + BORDER + TOP_BORDER
+                    ))
+                    current_screen = "game"  # Passer à l'écran du jeu
             elif current_screen == "sandbox_menu":
                 result = menu.handle_event(event)
                 print(f"Menu handle_event returned: {result}")
