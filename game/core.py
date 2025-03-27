@@ -1,6 +1,5 @@
 import random
 import pygame
-
 from .constants import BLACK, BORDER, GRID_SIZE, TOP_BORDER
 from .grid import Grid
 
@@ -17,10 +16,6 @@ class GameCore:
         self.t = 0
 
     def initialize_grid(self, width, height, mines):
-        print(f"\n[DEBUG] Initializing grid with:")
-        print(f"Width: {width}")
-        print(f"Height: {height}")
-        print(f"Mines: {mines}\n")
         self.game_width = width
         self.game_height = height
         self.num_mine = mines
@@ -30,9 +25,6 @@ class GameCore:
         self.first_click = True
         self.t = 0
         
-        print(f"[DEBUG] Creating empty grid of size {width}x{height}")
-        
-        # Create empty grid
         for j in range(height):
             line = []
             for i in range(width):
@@ -40,7 +32,6 @@ class GameCore:
             self.grid.append(line)
 
     def generate_mines(self, first_x, first_y):
-        # Generate mines avoiding first click area
         self.mines = []
         safe_zone = [(first_x + dx, first_y + dy) for dx in range(-1, 2) for dy in range(-1, 2)]
         
@@ -52,7 +43,6 @@ class GameCore:
                 self.mines.append([x, y])
                 self.grid[y][x].val = -1
         
-        # Update grid values
         for row in self.grid:
             for cell in row:
                 cell.updateValue(self.grid, self.game_width, self.game_height)
@@ -61,22 +51,18 @@ class GameCore:
         for row in self.grid:
             for cell in row:
                 if cell.rect.collidepoint(pos):
-                    if button == 1 and not cell.flag and not cell.question:  # Left click
+                    if button == 1 and not cell.flag and not cell.question:
                         if self.first_click:
                             self.first_click = False
                             self.generate_mines(cell.xGrid, cell.yGrid)
                         
                         cell.revealGrid(self.grid, self.game_width, self.game_height)
                         
-                        if cell.flag:
-                            self.mine_left += 1
-                            cell.flag = False
-                        
                         if cell.val == -1:
                             self.game_state = "Game Over"
                             cell.mineClicked = True
                             
-                    elif button == 3 and not cell.clicked:  # Right click
+                    elif button == 3 and not cell.clicked:
                         if not cell.flag and not cell.question:
                             cell.flag = True
                             self.mine_left -= 1
@@ -93,18 +79,15 @@ class GameCore:
                 for cell in row:
                     if cell.val != -1 and not cell.clicked:
                         return False
-            self.game_state = "Win"
+            # Modification pour le Hall of Fame : Ne met plus game_state à "Win" ici, délégué à main.py
             return True
         return False
 
     def draw(self, gameDisplay, sprites):
-        print(f"[DEBUG DRAW] Drawing grid - Game state: {self.game_state}")
-        # Draw grid
         for row in self.grid:
             for cell in row:
                 cell.drawGrid(gameDisplay, sprites)
         
-        # Draw game state
         if self.game_state == "Game Over":
             self.draw_text(gameDisplay, "Game Over!", 50)
             self.draw_text(gameDisplay, "R to restart", 35, 50)
@@ -114,9 +97,9 @@ class GameCore:
                         cell.mineFalse = True
         elif self.game_state == "Win":
             self.draw_text(gameDisplay, "You WON!", 50)
-            self.draw_text(gameDisplay, "R to restart", 35, 50)
+            # Modification pour le Hall of Fame : Instruction pour sauvegarder le score
+            self.draw_text(gameDisplay, "Press Enter to save your score", 35, 50)
         
-        # Draw timer and mine counter
         if self.game_state == "Playing":
             self.t += 1
         

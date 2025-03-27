@@ -4,90 +4,98 @@ from .constants import *
 class Menu:
     def __init__(self, gameDisplay):
         self.gameDisplay = gameDisplay
-        self.input_width = str(0)
-        self.input_height = str(0)
-        self.input_mines = str(0)
+        self.input_width = str(DEFAULT_WIDTH)
+        self.input_height = str(DEFAULT_HEIGHT)
+        self.input_mines = str(DEFAULT_MINES)
         self.active_input = None
         self.error_message = ""
 
     def draw(self):
         self.gameDisplay.fill(BG_COLOR)
         
-        # Draw text labels
-        self.draw_text("Set Grid Size", 40, -340)
-        self.draw_text("Width:", 30, -300)
-        self.draw_text("Height:", 30, -200)
-        self.draw_text("Mines:", 30, -100)
+        self.draw_text("Set Grid Size", 40, -200)
+        self.draw_text("Width:", 30, -150)
+        self.draw_text("Height:", 30, -100)
+        self.draw_text("Mines:", 30, -50)
 
-        # Draw input boxes
-        box_width, box_height = 140, 40
+        box_width, box_height = 100, 30
         width_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - box_width // 2,
-            180, box_width, box_height
+            150, box_width, box_height
         )
         height_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - box_width // 2,
-            280, box_width, box_height
+            200, box_width, box_height
         )
         mines_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - box_width // 2,
-            380, box_width, box_height
+            250, box_width, box_height
         )
         start_box = pygame.Rect(
-            self.gameDisplay.get_width() // 2 - 100,
-            460, 200, 50
+            self.gameDisplay.get_width() // 2 - 80,
+            300, 160, 40
+        )
+        # Ajout pour le Hall of Fame : Bouton pour accéder au Hall of Fame
+        hof_box = pygame.Rect(
+            self.gameDisplay.get_width() // 2 - 80,
+            350, 160, 40
         )
 
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), width_box, 2 if self.active_input == "width" else 1)
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), height_box, 2 if self.active_input == "height" else 1)
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), mines_box, 2 if self.active_input == "mines" else 1)
         pygame.draw.rect(self.gameDisplay, (0, 200, 0), start_box)
+        # Ajout pour le Hall of Fame : Dessin du bouton Hall of Fame
+        pygame.draw.rect(self.gameDisplay, (0, 150, 200), hof_box)
         
-        # Render text
-        start_text = pygame.font.SysFont("Calibri", 30).render("START", True, (255, 255, 255))
-        self.gameDisplay.blit(start_text, (start_box.x + 70, start_box.y + 15))
+        start_text = pygame.font.SysFont("Calibri", 25).render("START", True, (255, 255, 255))
+        # Ajout pour le Hall of Fame : Texte du bouton Hall of Fame
+        hof_text = pygame.font.SysFont("Calibri", 25).render("Hall of Fame", True, (255, 255, 255))
+        self.gameDisplay.blit(start_text, (start_box.x + 50, start_box.y + 10))
+        # Ajout pour le Hall of Fame : Positionnement du texte Hall of Fame
+        self.gameDisplay.blit(hof_text, (hof_box.x + 20, hof_box.y + 10))
 
-        # Render user input
         for box, text in [(width_box, self.input_width), 
                          (height_box, self.input_height), 
                          (mines_box, self.input_mines)]:
-            screen_text = pygame.font.SysFont("Calibri", 30).render(text, True, BLACK)
+            screen_text = pygame.font.SysFont("Calibri", 25).render(text, True, BLACK)
             self.gameDisplay.blit(screen_text, (box.x + 10, box.y + 5))
 
-        # Error message
         if self.error_message:
-            self.draw_text(self.error_message, 25, 200)
+            self.draw_text(self.error_message, 20, 100)
 
         pygame.display.update()
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             result = self.handle_mouse_click(event.pos)
-            print(f"Returned from handle_mouse_click: {result}") 
-            return result  # Directly return the result from handle_mouse_click !!
+            return result
         elif event.type == pygame.KEYDOWN and self.active_input:
             self.handle_key_input(event)
-        
-        return None  # Only return None if no valid result !!!!!!!!!
-
+        return None
 
     def handle_mouse_click(self, pos):
-        box_width, box_height = 140, 40
+        box_width, box_height = 100, 30
         width_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - box_width // 2,
-            180, box_width, box_height
+            150, box_width, box_height
         )
         height_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - box_width // 2,
-            280, box_width, box_height
+            200, box_width, box_height
         )
         mines_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - box_width // 2,
-            380, box_width, box_height
+            250, box_width, box_height
         )
         start_box = pygame.Rect(
-            self.gameDisplay.get_width() // 2 - 100,
-            460, 200, 50
+            self.gameDisplay.get_width() // 2 - 80,
+            300, 160, 40
+        )
+        # Ajout pour le Hall of Fame : Définition de la zone cliquable pour le bouton Hall of Fame
+        hof_box = pygame.Rect(
+            self.gameDisplay.get_width() // 2 - 80,
+            350, 160, 40
         )
 
         self.active_input = None
@@ -98,10 +106,11 @@ class Menu:
         elif mines_box.collidepoint(pos):
             self.active_input = "mines"
         elif start_box.collidepoint(pos):
-            print("work")  # This shows we're clicking START
             result = self.validate_inputs()
-            print(f"Validation result: {result}")  
             return result
+        # Ajout pour le Hall of Fame : Détection du clic sur le bouton Hall of Fame et renvoi d'un signal
+        elif hof_box.collidepoint(pos):
+            return "hall_of_fame"
 
         return None    
 
@@ -127,21 +136,16 @@ class Menu:
             h = int(self.input_height)
             m = int(self.input_mines)
             
-            print(f"[DEBUG] Validating: Width={w}, Height={h}, Mines={m}")
-            
             if w < 1 or h < 1 or m < 1:
-                print("[DEBUG] Validation failed: Negative values")
                 self.error_message = "Values must be positive"
                 return None
             elif m >= w * h:
-                print("[DEBUG] Validation failed: Too many mines")
                 self.error_message = "Too many mines"
                 return None
             else:
-                print("[DEBUG] Validation successful!")
-                return w, h, m
+                self.error_message = ""
+                return (w, h, m)
         except ValueError:
-            print("[DEBUG] Validation failed: Invalid numbers")
             self.error_message = "Invalid numbers"
             return None
 
