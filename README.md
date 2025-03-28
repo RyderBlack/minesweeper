@@ -11,7 +11,7 @@ Cyber Minesweeper is a modern, cyberpunk-themed take on the classic Minesweeper 
 - 🌈 Responsive grid sizing
 
 ## Prerequisites
-- Python 3.7+
+- Python 3.12+
 - Pygame library
 
 ## Installation
