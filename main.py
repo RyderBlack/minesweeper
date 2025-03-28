@@ -1,6 +1,7 @@
 import pygame
 import os
 import sys
+import time
 from game.core import GameCore
 from game.menu import Menu
 from game.main_menu import MainMenu
@@ -31,7 +32,7 @@ def main():
     pygame.init()
     
     MENU_WIDTH = 600 
-    MENU_HEIGHT = 600
+    MENU_HEIGHT = 800
     
     # Initialize display with default size
     gameDisplay = pygame.display.set_mode((MENU_WIDTH,MENU_HEIGHT))
@@ -51,6 +52,7 @@ def main():
     current_screen = "main_menu"
     running = True
     player_name = "Anonymous"
+    game_start_time = 0 
     
     while running:
         for event in pygame.event.get():
@@ -65,11 +67,14 @@ def main():
                 elif selected_option in DIFFICULTY_PRESETS:
                     preset = DIFFICULTY_PRESETS[selected_option]
                     game.initialize_grid(preset["width"], preset["height"], preset["mines"])
-                    gameDisplay = pygame.display.set_mode((
-                        GRID_SIZE * preset["width"] + BORDER * 2,
-                        GRID_SIZE * preset["height"] + BORDER + TOP_BORDER
-                    ))
+                    
+                    # Improved display size calculation
+                    new_width = preset["width"] * GRID_SIZE + 2 * BORDER
+                    new_height = preset["height"] * GRID_SIZE + TOP_BORDER + BORDER
+                    gameDisplay = pygame.display.set_mode((new_width, new_height))
+                    
                     current_screen = "game"  
+                    game_start_time = time.time() 
                 elif selected_option == "Record":
                     current_screen = "hall_of_fame"
 
@@ -78,9 +83,12 @@ def main():
                 if result:
                     width, height, mines = result
                     game.initialize_grid(width, height, mines)
-                    gameDisplay = pygame.display.set_mode((MENU_WIDTH, MENU_HEIGHT))
-                    menu.gameDisplay = gameDisplay
+                    new_width = width * GRID_SIZE + 2 * BORDER
+                    new_height = height * GRID_SIZE + TOP_BORDER + BORDER
+                    gameDisplay = pygame.display.set_mode((new_width, new_height))
+                    
                     current_screen = "game"
+                    game_start_time = time.time()
                     
             elif current_screen == "game":
                 if game.game_state in ["Game Over", "Win"]:
@@ -88,6 +96,7 @@ def main():
                         if event.key == pygame.K_r:
                             game.game_state = "Playing"
                             current_screen = "main_menu"
+                            gameDisplay = pygame.display.set_mode((MENU_WIDTH,MENU_HEIGHT))
                         # Handle name input when player wins
                         elif game.game_state == "Win" and event.key != pygame.K_RETURN:
                             if event.key == pygame.K_BACKSPACE:
@@ -97,8 +106,9 @@ def main():
                             game.player_name = player_name  # Update name in game core
                 else:
                     if event.type == pygame.MOUSEBUTTONUP:
-                        game.handle_click(event.pos, event.button, gameDisplay)
-                        game.check_win()  # Now no arguments needed
+                        if time.time() - game_start_time > 0.5:
+                            game.handle_click(event.pos, event.button, gameDisplay)
+                            game.check_win()  # Now no arguments needed
                         
             elif current_screen == "hall_of_fame":
                 result = hall_of_fame.handle_event(event)

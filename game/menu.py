@@ -1,6 +1,7 @@
 import pygame
 from .constants import *
 
+
 class Menu:
     def __init__(self, gameDisplay):
         self.gameDisplay = gameDisplay
@@ -9,56 +10,88 @@ class Menu:
         self.input_mines = ""
         self.active_input = None
         self.error_message = ""
+        self.font_title = pygame.font.Font(None, 50)
+        self.font_labels = pygame.font.Font(None, 35)
+        self.font_input = pygame.font.Font(None, 40)
 
     def draw(self):
         self.gameDisplay.fill(BG_COLOR)
         
-        # Draw text labels
-        self.draw_text("Set Grid Size", 40, -260)  
-        self.draw_text("Width:", 30, -140) 
-        self.draw_text("Height:", 30, -40)
-        self.draw_text("Mines:", 30, 60)
-
-        # Draw input boxes
-        box_width, box_height = 140, 40
-        width_box = pygame.Rect(
-            self.gameDisplay.get_width() // 2 - box_width // 2,
-            180, box_width, box_height
-        )
-        height_box = pygame.Rect(
-            self.gameDisplay.get_width() // 2 - box_width // 2,
-            280, box_width, box_height
-        )
-        mines_box = pygame.Rect(
-            self.gameDisplay.get_width() // 2 - box_width // 2,
-            380, box_width, box_height
-        )
-        start_box = pygame.Rect(
-            self.gameDisplay.get_width() // 2 - 100,
-            460, 200, 50
-        )
-
-        pygame.draw.rect(self.gameDisplay, (255, 0, 0), width_box, 2 if self.active_input == "width" else 1)
-        pygame.draw.rect(self.gameDisplay, (255, 0, 0), height_box, 2 if self.active_input == "height" else 1)
-        pygame.draw.rect(self.gameDisplay, (255, 0, 0), mines_box, 2 if self.active_input == "mines" else 1)
-        pygame.draw.rect(self.gameDisplay, (0, 200, 0), start_box)
+        # Circuit background
+        self._draw_circuit_background()
         
-        # Render text
-        start_text = pygame.font.SysFont("Calibri", 30).render("START", True, (255, 255, 255))
-        self.gameDisplay.blit(start_text, (start_box.x + 70, start_box.y + 15))
+        # Draw cyberpunk title
+        title_text = self.font_title.render("Grid Configuration", True, TEXT_COLOR)
+        title_rect = title_text.get_rect(center=(
+            self.gameDisplay.get_width() // 2,
+            100
+        ))
+        self.gameDisplay.blit(title_text, title_rect)
 
-        # Render user input
-        for box, text in [(width_box, self.input_width), 
-                         (height_box, self.input_height), 
-                         (mines_box, self.input_mines)]:
-            screen_text = pygame.font.SysFont("Calibri", 30).render(text, True, BLACK)
-            self.gameDisplay.blit(screen_text, (box.x + 10, box.y + 5))
+        # Draw input labels and boxes
+        labels = [
+            ("Width", 180, "width", 1, 30),
+            ("Height", 280, "height", 1, 3),
+            ("Mines", 380, "mines", 3, None)
+        ]
+
+        for label, y_pos, input_type, min_val, max_val in labels:
+            # Label
+            label_text = self.font_labels.render(label, True, TEXT_COLOR)
+            label_rect = label_text.get_rect(center=(
+                self.gameDisplay.get_width() // 2 - 100,
+                y_pos
+            ))
+            self.gameDisplay.blit(label_text, label_rect)
+
+            # Input box
+            box_width, box_height = 200, 50
+            box_rect = pygame.Rect(
+                self.gameDisplay.get_width() // 2 - box_width // 2,
+                y_pos + 30, box_width, box_height
+            )
+            
+            # Cyberpunk input box
+            pygame.draw.rect(self.gameDisplay, BUTTON_COLOR, box_rect)
+            border_color = ACCENT_COLOR if self.active_input == input_type else (50, 80, 120)
+            pygame.draw.rect(self.gameDisplay, border_color, box_rect, 2)
+
+            # Input text
+            input_text = getattr(self, f"input_{input_type}")
+            rendered_text = self.font_input.render(input_text, True, TEXT_COLOR)
+            text_rect = rendered_text.get_rect(center=box_rect.center)
+            self.gameDisplay.blit(rendered_text, text_rect)
+
+        # Start button - moved lower
+        start_box = pygame.Rect(
+            self.gameDisplay.get_width() // 2 - 125,
+            520, 250, 60  # Moved lower
+        )
+        pygame.draw.rect(self.gameDisplay, BUTTON_COLOR, start_box)
+        pygame.draw.rect(self.gameDisplay, ACCENT_COLOR, start_box, 2)
+        
+        start_text = self.font_input.render("START", True, TEXT_COLOR)
+        start_text_rect = start_text.get_rect(center=start_box.center)
+        self.gameDisplay.blit(start_text, start_text_rect)
 
         # Error message
         if self.error_message:
-            self.draw_text(self.error_message, 25, 200)
+            error_text = self.font_labels.render(self.error_message, True, (255, 50, 50))
+            error_rect = error_text.get_rect(center=(
+                self.gameDisplay.get_width() // 2,
+                590  # Adjusted to be below start button
+            ))
+            self.gameDisplay.blit(error_text, error_rect)
 
         pygame.display.update()
+
+    def _draw_circuit_background(self):
+        # Draw grid-like circuit background
+        for x in range(0, self.gameDisplay.get_width(), 30):
+            pygame.draw.line(self.gameDisplay, (20, 40, 60), (x, 0), (x, self.gameDisplay.get_height()), 1)
+        for y in range(0, self.gameDisplay.get_height(), 30):
+            pygame.draw.line(self.gameDisplay, (20, 40, 60), (0, y), (self.gameDisplay.get_width(), y), 1)
+
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -127,25 +160,20 @@ class Menu:
             h = int(self.input_height)
             m = int(self.input_mines)
             
-            # print(f"[DEBUG] Validating: Width={w}, Height={h}, Mines={m}")
-            
-            if w < 1 or h < 1 or m < 1:
-                print("[DEBUG] Validation failed: Negative values")
-                self.error_message = "Values must be positive"
-                if m >= 3:
-                    self.error_message = "Minimum mines should be 3"
-                    return None
+            if w < 1 or w > 30 or h < 1 or h > 30:
+                self.error_message = "Width/Height between 1-30"
                 return None
-            elif m >= w * h:
-                print("[DEBUG] Validation failed: Too many mines")
+            
+            if m < 3:
+                self.error_message = "Minimum 3 mines"
+                return None
+            
+            if m >= w * h:
                 self.error_message = "Too many mines"
                 return None
             
-            else:
-                print("[DEBUG] Validation successful!")
-                return w, h, m
+            return w, h, m
         except ValueError:
-            print("[DEBUG] Validation failed: Invalid numbers")
             self.error_message = "Invalid numbers"
             return None
 
