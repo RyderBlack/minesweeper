@@ -29,9 +29,7 @@ class GameCore:
         self.mines = []
         self.first_click = True
         self.t = 0
-        
-        print(f"[DEBUG] Creating empty grid of size {width}x{height}")
-        
+                
         # Create empty grid
         for j in range(height):
             line = []
@@ -41,8 +39,9 @@ class GameCore:
 
     def generate_mines(self, first_x, first_y):
         # Generate mines avoiding first click area
+        safe_zone = [(first_x + dx, first_y + dy) for dx in range(-2, 3) for dy in range(-2, 3)]
+        
         self.mines = []
-        safe_zone = [(first_x + dx, first_y + dy) for dx in range(-1, 2) for dy in range(-1, 2)]
         
         while len(self.mines) < self.num_mine:
             x = random.randrange(0, self.game_width)
@@ -98,7 +97,7 @@ class GameCore:
         return False
 
     def draw(self, gameDisplay, sprites):
-        print(f"[DEBUG DRAW] Drawing grid - Game state: {self.game_state}")
+        # print(f"[DEBUG DRAW] Drawing grid - Game state: {self.game_state}")
         # Draw grid
         for row in self.grid:
             for cell in row:
@@ -106,15 +105,16 @@ class GameCore:
         
         # Draw game state
         if self.game_state == "Game Over":
-            self.draw_text(gameDisplay, "Game Over!", 50)
-            self.draw_text(gameDisplay, "R to restart", 35, 50)
-            for row in self.grid:
-                for cell in row:
-                    if cell.flag and cell.val != -1:
-                        cell.mineFalse = True
-        elif self.game_state == "Win":
-            self.draw_text(gameDisplay, "You WON!", 50)
-            self.draw_text(gameDisplay, "R to restart", 35, 50)
+            if self.game_state == "Game Over":
+                self.draw_text(gameDisplay, "Game Over!", 35, -220)
+                self.draw_text(gameDisplay, "R to restart", 35, -180)
+                for row in self.grid:
+                    for cell in row:
+                        if cell.flag and cell.val != -1:
+                            cell.mineFalse = True
+            elif self.game_state == "Win":
+                self.draw_text(gameDisplay, "You WON!", -180)
+                self.draw_text(gameDisplay, "R to restartdd", 35, -180)
         
         # Draw timer and mine counter
         if self.game_state == "Playing":

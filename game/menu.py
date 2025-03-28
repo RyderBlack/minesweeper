@@ -4,9 +4,9 @@ from .constants import *
 class Menu:
     def __init__(self, gameDisplay):
         self.gameDisplay = gameDisplay
-        self.input_width = str(0)
-        self.input_height = str(0)
-        self.input_mines = str(0)
+        self.input_width = ""
+        self.input_height = ""
+        self.input_mines = ""
         self.active_input = None
         self.error_message = ""
 
@@ -14,10 +14,10 @@ class Menu:
         self.gameDisplay.fill(BG_COLOR)
         
         # Draw text labels
-        self.draw_text("Set Grid Size", 40, -340)
-        self.draw_text("Width:", 30, -300)
-        self.draw_text("Height:", 30, -200)
-        self.draw_text("Mines:", 30, -100)
+        self.draw_text("Set Grid Size", 40, -260)  
+        self.draw_text("Width:", 30, -140) 
+        self.draw_text("Height:", 30, -40)
+        self.draw_text("Mines:", 30, 60)
 
         # Draw input boxes
         box_width, box_height = 140, 40
@@ -38,9 +38,9 @@ class Menu:
             460, 200, 50
         )
 
-        pygame.draw.rect(self.gameDisplay, (255, 255, 255), width_box, 2 if self.active_input == "width" else 1)
-        pygame.draw.rect(self.gameDisplay, (255, 255, 255), height_box, 2 if self.active_input == "height" else 1)
-        pygame.draw.rect(self.gameDisplay, (255, 255, 255), mines_box, 2 if self.active_input == "mines" else 1)
+        pygame.draw.rect(self.gameDisplay, (255, 0, 0), width_box, 2 if self.active_input == "width" else 1)
+        pygame.draw.rect(self.gameDisplay, (255, 0, 0), height_box, 2 if self.active_input == "height" else 1)
+        pygame.draw.rect(self.gameDisplay, (255, 0, 0), mines_box, 2 if self.active_input == "mines" else 1)
         pygame.draw.rect(self.gameDisplay, (0, 200, 0), start_box)
         
         # Render text
@@ -127,16 +127,20 @@ class Menu:
             h = int(self.input_height)
             m = int(self.input_mines)
             
-            print(f"[DEBUG] Validating: Width={w}, Height={h}, Mines={m}")
+            # print(f"[DEBUG] Validating: Width={w}, Height={h}, Mines={m}")
             
             if w < 1 or h < 1 or m < 1:
                 print("[DEBUG] Validation failed: Negative values")
                 self.error_message = "Values must be positive"
+                if m >= 3:
+                    self.error_message = "Minimum mines should be 3"
+                    return None
                 return None
             elif m >= w * h:
                 print("[DEBUG] Validation failed: Too many mines")
                 self.error_message = "Too many mines"
                 return None
+            
             else:
                 print("[DEBUG] Validation successful!")
                 return w, h, m

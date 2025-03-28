@@ -20,12 +20,12 @@ def load_sprites():
 def main():
     pygame.init()
     
+    MENU_WIDTH = 600 
+    MENU_HEIGHT = 600
+    
     # Initialize display with default size
-    gameDisplay = pygame.display.set_mode((
-        GRID_SIZE * DEFAULT_WIDTH + BORDER * 2,
-        GRID_SIZE * DEFAULT_HEIGHT + BORDER + TOP_BORDER
-    ))
-    pygame.display.set_caption("Minesweeper")
+    gameDisplay = pygame.display.set_mode((MENU_WIDTH,MENU_HEIGHT))
+    pygame.display.set_caption("Cyber Minesweeper")
     
     # Load sprites
     sprites = load_sprites()
@@ -45,7 +45,7 @@ def main():
             
             if in_menu:
                 result = menu.handle_event(event)
-                print(f"Menu handle_event returned: {result}")  # Menu handle_event returned: None if not
+                # print(f"Menu handle_event returned: {result}")  # Menu handle_event returned: None if not
                 if result:  # User clicked START with valid inputs
                     width, height, mines = result
                     print(f"\n[DEBUG MAIN] Starting game with: {width}x{height}, {mines} mines") 
@@ -60,10 +60,13 @@ def main():
                     in_menu = False
                     print("Game started!") 
             else:
-                print("[DEBUG] Game start failed - invalid result")
+                # print("[DEBUG] Game start failed - invalid result")
                 if game.game_state in ["Game Over", "Win"]:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_r:
+                            game.game_state = "Playing"
+                            gameDisplay = pygame.display.set_mode((MENU_WIDTH, MENU_HEIGHT))
+                            menu.gameDisplay = gameDisplay
                             in_menu = True
                 else:
                     if event.type == pygame.MOUSEBUTTONUP:
