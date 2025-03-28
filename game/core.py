@@ -15,6 +15,8 @@ class GameCore:
         self.game_height = 0
         self.num_mine = 0
         self.t = 0
+        self.hall_of_fame = None  # Add reference to Hall of Fame
+        self.player_name = "Anonymous"  # Default player name
 
     def initialize_grid(self, width, height, mines):
         print(f"\n[DEBUG] Initializing grid with:")
@@ -94,6 +96,15 @@ class GameCore:
                     if cell.val != -1 and not cell.clicked:
                         return False
             self.game_state = "Win"
+            # Save score if hall_of_fame is set
+            if self.hall_of_fame:
+                self.hall_of_fame.add_score(
+                    time=self.t // 15,
+                    width=self.game_width,
+                    height=self.game_height,
+                    mines=self.num_mine,
+                    name=self.player_name
+                )
             return True
         return False
 

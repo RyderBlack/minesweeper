@@ -37,17 +37,12 @@ class Menu:
             self.gameDisplay.get_width() // 2 - 100,
             460, 200, 50
         )
-        # Ajout pour le Hall of Fame : Bouton pour accéder au Hall of Fame
-        hof_box = pygame.Rect(
-            self.gameDisplay.get_width() // 2 - 80,
-            350, 160, 40
-        )
+
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), width_box, 2 if self.active_input == "width" else 1)
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), height_box, 2 if self.active_input == "height" else 1)
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), mines_box, 2 if self.active_input == "mines" else 1)
         pygame.draw.rect(self.gameDisplay, (0, 200, 0), start_box)
         
-        # Render text
         start_text = pygame.font.SysFont("Calibri", 30).render("START", True, (255, 255, 255))
         self.gameDisplay.blit(start_text, (start_box.x + 70, start_box.y + 15))
 

@@ -69,44 +69,65 @@ class HallOfFame:
         return None
 
     # Ajout pour le Hall of Fame : Affichage du Hall of Fame
+    # In hall_of_fame.py, modify the draw method:
     def draw(self):
         self.gameDisplay.fill(BG_COLOR)
         
+        # Title
+        self.draw_text("Hall of Fame", 40, self.gameDisplay.get_width() // 2, 30, center=True)
+        
+        # Difficulty filter buttons
+        buttons = [
+            ("All", 50, 80),
+            ("Facile", 150, 80),
+            ("Moyen", 250, 80),
+            ("Difficile", 350, 80),
+            ("Sandbox", 450, 80)
+        ]
+        
+        for text, x, y in buttons:
+            button_rect = pygame.Rect(x, y, 80, 30)
+            pygame.draw.rect(self.gameDisplay, (200, 200, 200), button_rect)
+            self.draw_text(text, 20, x + 40, y + 15, center=True)
+        
+        # Scores display area
         score_area = pygame.Rect(
-            50, 50, 500, 250
+            50, 120, 
+            self.gameDisplay.get_width() - 100, 
+            self.gameDisplay.get_height() - 180
         )
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), score_area)
         pygame.draw.rect(self.gameDisplay, BLACK, score_area, 2)
-
-        self.draw_text("Hall of Fame", 40, score_area.x + score_area.width // 2, 30, center=True)
-
-        y_start = score_area.y + 40 - self.scroll_y
-        for i, score in enumerate(self.scores):
-            y_pos = y_start + i * self.line_height
-            if score_area.y + 40 <= y_pos < score_area.y + score_area.height - self.line_height:
-                time = score.get("time", 0)
-                name = score.get("name", "Anonymous")
-                difficulty = score.get("difficulty", "Unknown")
-                text = f"{i + 1}. {time}s - {name} - {difficulty}"
-                self.draw_text(text, 20, score_area.x + 10, y_pos, center=False)
-
-        if self.max_scroll > 0:
-            scrollbar_height = max(30, score_area.height * score_area.height // max(1, len(self.scores) * self.line_height))
-            scrollbar_y = score_area.y + (self.scroll_y * (score_area.height - scrollbar_height) // self.max_scroll)
-            scrollbar = pygame.Rect(
-                score_area.x + score_area.width - 15,
-                scrollbar_y, 10, scrollbar_height
-            )
-            pygame.draw.rect(self.gameDisplay, (150, 150, 150), scrollbar)
-
+        
+        # Column headers
+        headers = ["Rank", "Time", "Name", "Difficulty"]
+        for i, header in enumerate(headers):
+            x = score_area.x + 10 + i * 150
+            self.draw_text(header, 20, x, score_area.y + 10, center=False)
+        
+        # Display scores
+        y_pos = score_area.y + 40
+        for idx, score in enumerate(self.scores[:20]):  # Show top 20
+            # Rank
+            self.draw_text(f"{idx + 1}.", 18, score_area.x + 20, y_pos, center=False)
+            # Time
+            self.draw_text(f"{score['time']}s", 18, score_area.x + 100, y_pos, center=False)
+            # Name
+            self.draw_text(score['name'], 18, score_area.x + 250, y_pos, center=False)
+            # Difficulty
+            self.draw_text(score['difficulty'], 18, score_area.x + 400, y_pos, center=False)
+            
+            y_pos += 30
+        
+        # Back button
         back_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - 80,
-            350, 160, 40
+            self.gameDisplay.get_height() - 50, 
+            160, 40
         )
         pygame.draw.rect(self.gameDisplay, (200, 0, 0), back_box)
-        back_text = pygame.font.SysFont("Calibri", 25).render("Back", True, (255, 255, 255))
-        self.gameDisplay.blit(back_text, (back_box.x + 50, back_box.y + 10))
-
+        self.draw_text("Back to Menu", 25, back_box.x + 80, back_box.y + 20, center=True)
+        
         pygame.display.update()
 
     # Ajout pour le Hall of Fame : Méthode utilitaire pour dessiner le texte
