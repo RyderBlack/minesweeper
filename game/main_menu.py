@@ -14,13 +14,29 @@ class MainMenu:
         # Glitch effect variables
         self.glitch_timer = 0
         self.glitch_interval = 30
+        
+        # Load background image
+        try:
+            # Adjust the path to where your background image is located
+            background_path = os.path.join('assets', 'background.png')
+            self.background = pygame.image.load(background_path).convert()
+            
+            # Resize background to fit the display
+            self.background = pygame.transform.scale(self.background, 
+                                                     (self.gameDisplay.get_width(), 
+                                                      self.gameDisplay.get_height()))
+        except Exception as e:
+            print(f"Could not load background image: {e}")
+            self.background = None
+
 
     def draw(self):
-        # Cyberpunk background
-        self.gameDisplay.fill(BG_COLOR)
-        
-        # Add some grid/circuit-like background
-        self._draw_circuit_background()
+        if self.background:
+            self.gameDisplay.blit(self.background, (0, 0))
+        else:
+            # Fallback to original background
+            self.gameDisplay.fill(BG_COLOR)
+            self._draw_circuit_background()
         
         # Glitchy title
         self._draw_glitchy_title()
@@ -32,6 +48,12 @@ class MainMenu:
                 self.gameDisplay.get_width() // 2 - button_width // 2,
                 250 + idx * 80, button_width, button_height
             )
+            
+            # Slightly darken the background behind buttons for readability
+            s = pygame.Surface((button_width, button_height))
+            s.set_alpha(128)  # Transparency level
+            s.fill((0, 0, 0))
+            self.gameDisplay.blit(s, button_rect.topleft)
             
             # Cyberpunk button design
             pygame.draw.rect(self.gameDisplay, BUTTON_COLOR, button_rect)
