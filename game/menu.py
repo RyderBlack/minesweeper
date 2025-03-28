@@ -37,7 +37,11 @@ class Menu:
             self.gameDisplay.get_width() // 2 - 100,
             460, 200, 50
         )
-
+        # Ajout pour le Hall of Fame : Bouton pour accéder au Hall of Fame
+        hof_box = pygame.Rect(
+            self.gameDisplay.get_width() // 2 - 80,
+            350, 160, 40
+        )
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), width_box, 2 if self.active_input == "width" else 1)
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), height_box, 2 if self.active_input == "height" else 1)
         pygame.draw.rect(self.gameDisplay, (255, 255, 255), mines_box, 2 if self.active_input == "mines" else 1)
@@ -129,9 +133,9 @@ class Menu:
             
             print(f"[DEBUG] Validating: Width={w}, Height={h}, Mines={m}")
             
-            if w < 1 or h < 1 or m < 1:
+            if w < 3 or h < 3 or m < 3:
                 print("[DEBUG] Validation failed: Negative values")
-                self.error_message = "Values must be positive"
+                self.error_message = "Values must be superior or equal to 3 also not be negative"
                 return None
             elif m >= w * h:
                 print("[DEBUG] Validation failed: Too many mines")

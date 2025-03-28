@@ -5,11 +5,12 @@ from game.core import GameCore
 from game.menu import Menu
 from game.main_menu import MainMenu
 from game.constants import *
+from game.hall_of_fame import *
 # Presets pour les niveaux de difficulté
 DIFFICULTY_PRESETS = {
-    "Facile": {"width": 10, "height": 10, "mines": 15},
-    "Moyen": {"width": 16, "height": 16, "mines": 64},
-    "Difficile": {"width": 20, "height": 20, "mines": 120}
+    "Facile": {"width": 10, "height": 10, "mines": 10},
+    "Moyen": {"width": 16, "height": 16, "mines": 32},
+    "Difficile": {"width": 20, "height": 20, "mines": 100}
 }
 def load_sprites():
     sprites = {}
@@ -40,7 +41,7 @@ def main():
     main_menu = MainMenu(gameDisplay)
     menu = Menu(gameDisplay)
     game = GameCore()
-    
+    hall_of_fame = HallOfFame(gameDisplay)  # Add Hall of Fame instance
     clock = pygame.time.Clock()
     current_screen = "main_menu"  # Default screen is the Main Menu
     running = True
@@ -65,6 +66,9 @@ def main():
                         GRID_SIZE * preset["height"] + BORDER + TOP_BORDER
                     ))
                     current_screen = "game"  # Passer à l'écran du jeu
+                elif selected_option == "Record":  # Switch to Hall of Fame
+                    current_screen = "hall_of_fame"
+
             elif current_screen == "sandbox_menu":
                 result = menu.handle_event(event)
                 print(f"Menu handle_event returned: {result}")
@@ -90,7 +94,11 @@ def main():
                     if event.type == pygame.MOUSEBUTTONUP:
                         game.handle_click(event.pos, event.button, gameDisplay)
                         game.check_win()
-        
+            elif current_screen == "hall_of_fame":
+                result = hall_of_fame.handle_event(event)
+
+                if result == "menu":  # Go back to Main Menu
+                    current_screen = "main_menu"
         # Drawing
         if current_screen == "main_menu":
             main_menu.draw()
@@ -100,7 +108,8 @@ def main():
             gameDisplay.fill(BG_COLOR)
             game.draw(gameDisplay, sprites)
             pygame.display.update()
-        
+        elif current_screen == "hall_of_fame":
+            hall_of_fame.draw()
         clock.tick(15)
     
     pygame.quit()
