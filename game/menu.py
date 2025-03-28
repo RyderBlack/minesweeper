@@ -39,8 +39,8 @@ class Menu:
             # Label
             label_text = self.font_labels.render(label, True, TEXT_COLOR)
             label_rect = label_text.get_rect(center=(
-                self.gameDisplay.get_width() // 2 - 100,
-                y_pos
+                self.gameDisplay.get_width() // 2,
+                y_pos + 10
             ))
             self.gameDisplay.blit(label_text, label_rect)
 
@@ -105,22 +105,24 @@ class Menu:
 
 
     def handle_mouse_click(self, pos):
-        box_width, box_height = 140, 40
+        box_width, box_height = 200, 50
+    
+        # Adjust the positioning to match the draw method
         width_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - box_width // 2,
-            180, box_width, box_height
+            210, box_width, box_height
         )
         height_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - box_width // 2,
-            280, box_width, box_height
+            310, box_width, box_height
         )
         mines_box = pygame.Rect(
             self.gameDisplay.get_width() // 2 - box_width // 2,
-            380, box_width, box_height
+            410, box_width, box_height
         )
         start_box = pygame.Rect(
-            self.gameDisplay.get_width() // 2 - 100,
-            460, 200, 50
+            self.gameDisplay.get_width() // 2 - 125,
+            520, 250, 60
         )
 
         self.active_input = None
@@ -131,7 +133,7 @@ class Menu:
         elif mines_box.collidepoint(pos):
             self.active_input = "mines"
         elif start_box.collidepoint(pos):
-            print("work")  # This shows we're clicking START
+            print("START clicked")
             result = self.validate_inputs()
             print(f"Validation result: {result}")  
             return result
