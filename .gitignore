@@ -1,5 +1,7 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+game/__pycache__/
+*/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -172,3 +174,5 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+./game/__pycache__/
