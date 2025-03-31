@@ -31,9 +31,7 @@ class GameCore:
         self.mines = []
         self.first_click = True
         self.t = 0
-        
-        print(f"[DEBUG] Creating empty grid of size {width}x{height}")
-        
+                
         # Create empty grid
         for j in range(height):
             line = []
@@ -43,8 +41,11 @@ class GameCore:
 
     def generate_mines(self, first_x, first_y):
         # Generate mines avoiding first click area
+        safe_zone = set((first_x + dx, first_y + dy) 
+                        for dx in range(-1, 2) 
+                        for dy in range(-1, 2))
+        
         self.mines = []
-        safe_zone = [(first_x + dx, first_y + dy) for dx in range(-1, 2) for dy in range(-1, 2)]
         
         while len(self.mines) < self.num_mine:
             x = random.randrange(0, self.game_width)
@@ -96,46 +97,57 @@ class GameCore:
                     if cell.val != -1 and not cell.clicked:
                         return False
             self.game_state = "Win"
-            # Save score if hall_of_fame is set
+            
+            # before adding we check it's correctly updated
             if self.hall_of_fame:
                 self.hall_of_fame.add_score(
-                    time=self.t // 15,
+                    time=self.t // 15,  
                     width=self.game_width,
                     height=self.game_height,
                     mines=self.num_mine,
-                    name=self.player_name
+                    name=self.player_name  
                 )
             return True
         return False
 
+
     def draw(self, gameDisplay, sprites):
-        print(f"[DEBUG DRAW] Drawing grid - Game state: {self.game_state}")
         # Draw grid
+        adjusted_y_offset = -100 if self.game_height > 10 else -220
+        restart_y_offset = -80 if self.game_height > 10 else -180
+        
+        
         for row in self.grid:
             for cell in row:
                 cell.drawGrid(gameDisplay, sprites)
         
         # Draw game state
         if self.game_state == "Game Over":
-            self.draw_text(gameDisplay, "Game Over!", 50)
-            self.draw_text(gameDisplay, "R to restart", 35, 50)
-            for row in self.grid:
-                for cell in row:
-                    if cell.flag and cell.val != -1:
-                        cell.mineFalse = True
-        elif self.game_state == "Win":
-            self.draw_text(gameDisplay, "You WON!", 50)
-            self.draw_text(gameDisplay, "R to restart", 35, 50)
+            if self.game_state == "Game Over":
+                self.draw_text(gameDisplay, "Game Over!", 35, adjusted_y_offset)
+                self.draw_text(gameDisplay, "R to restart", 35, restart_y_offset)
+                for row in self.grid:
+                    for cell in row:
+                        if cell.flag and cell.val != -1:
+                            cell.mineFalse = True
+            elif self.game_state == "Win":
+                self.draw_text(gameDisplay, "You WON!", adjusted_y_offset)
+                self.draw_text(gameDisplay, "R to restart", 35, restart_y_offset)
+                name_display = f"Name: {self.player_name}"
+                self.draw_text(gameDisplay, name_display, 30, restart_y_offset + 40)
         
         # Draw timer and mine counter
         if self.game_state == "Playing":
             self.t += 1
         
+        # Timer 
         time_text = str(self.t // 15)
         self.draw_text(gameDisplay, time_text, 50, x=BORDER, y=BORDER, center=False)
+        #  Nb of Mines to discover
         mine_text = str(self.mine_left)
+        mine_x = gameDisplay.get_width() - BORDER - len(mine_text) * 25
         self.draw_text(gameDisplay, mine_text, 50, 
-                      x=gameDisplay.get_width() - BORDER - 50, 
+                      x=mine_x, 
                       y=BORDER, center=False)
 
     def draw_text(self, gameDisplay, text, size, y_offset=0, x=None, y=None, center=True):

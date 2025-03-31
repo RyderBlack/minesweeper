@@ -1,17 +1,21 @@
 import pygame
 import os
 import sys
+import time
 from game.core import GameCore
 from game.menu import Menu
 from game.main_menu import MainMenu
 from game.constants import *
 from game.hall_of_fame import *
-#Difficulty settings
+
+# Difficulty settings
 DIFFICULTY_PRESETS = {
     "Facile": {"width": 10, "height": 10, "mines": 10},
     "Moyen": {"width": 16, "height": 16, "mines": 32},
     "Difficile": {"width": 20, "height": 20, "mines": 100}
 }
+
+
 def load_sprites():
     sprites = {}
     for name in SPRITE_NAMES:
@@ -19,7 +23,7 @@ def load_sprites():
             sprites[name] = pygame.image.load(os.path.join(SPRITES_DIR, f"{name}.png"))
         except:
             print(f"Warning: Could not load sprite {name}")
-            # Create a placeholder surface if sprite is missing
+            # Create a placeholder surface if the sprite is missing
             sprites[name] = pygame.Surface((GRID_SIZE, GRID_SIZE))
             sprites[name].fill((255, 0, 255))  # Magenta placeholder
     return sprites
@@ -27,12 +31,12 @@ def load_sprites():
 def main():
     pygame.init()
     
+    MENU_WIDTH = 600 
+    MENU_HEIGHT = 800
+    
     # Initialize display with default size
-    gameDisplay = pygame.display.set_mode((
-        GRID_SIZE * DEFAULT_WIDTH + BORDER * 2,
-        GRID_SIZE * DEFAULT_HEIGHT + BORDER + TOP_BORDER
-    ))
-    pygame.display.set_caption("Minesweeper")
+    gameDisplay = pygame.display.set_mode((MENU_WIDTH, MENU_HEIGHT))
+    pygame.display.set_caption("Cyber Minesweeper")
     
     # Load sprites
     sprites = load_sprites()
@@ -42,12 +46,17 @@ def main():
     menu = Menu(gameDisplay)
     game = GameCore()
     hall_of_fame = HallOfFame(gameDisplay)
-    game.hall_of_fame = hall_of_fame  # Pass the hall_of_fame reference
-    
+    game.hall_of_fame = hall_of_fame  
+    score_saved = False
+
     clock = pygame.time.Clock()
     current_screen = "main_menu"
     running = True
-    player_name = "Anonymous"  # Default name
+    player_name = "Anonymous"
+    game_width = 0
+    game_height = 0
+    mines = 0
+    game_start_time = 0 
     
     while running:
         for event in pygame.event.get():
@@ -61,11 +70,16 @@ def main():
                 elif selected_option in DIFFICULTY_PRESETS:
                     preset = DIFFICULTY_PRESETS[selected_option]
                     game.initialize_grid(preset["width"], preset["height"], preset["mines"])
-                    gameDisplay = pygame.display.set_mode((
-                        GRID_SIZE * preset["width"] + BORDER * 2,
-                        GRID_SIZE * preset["height"] + BORDER + TOP_BORDER
-                    ))
+                    game_width = preset["width"]
+                    game_height = preset["height"]
+                    mines = preset["mines"]
+                    # Improved display size calculation
+                    new_width = preset["width"] * GRID_SIZE + 2 * BORDER
+                    new_height = preset["height"] * GRID_SIZE + TOP_BORDER + BORDER
+                    gameDisplay = pygame.display.set_mode((new_width, new_height))
+                    
                     current_screen = "game"  
+                    game_start_time = time.time() 
                 elif selected_option == "Record":
                     current_screen = "hall_of_fame"
 
@@ -74,35 +88,58 @@ def main():
                 if result:
                     width, height, mines = result
                     game.initialize_grid(width, height, mines)
-                    gameDisplay = pygame.display.set_mode((
-                        GRID_SIZE * width + BORDER * 2,
-                        GRID_SIZE * height + BORDER + TOP_BORDER
-                    ))
-                    menu.gameDisplay = gameDisplay
-                    current_screen = "game"
+                    game_width = width
+                    game_height = height
+                    mines = mines
+                    new_width = width * GRID_SIZE + 2 * BORDER
+                    new_height = height * GRID_SIZE + TOP_BORDER + BORDER
+                    gameDisplay = pygame.display.set_mode((new_width, new_height))
                     
+                    current_screen = "game"
+                    game_start_time = time.time()
+            
+            # Game state
             elif current_screen == "game":
                 if game.game_state in ["Game Over", "Win"]:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_r:
+                            if game.game_state == "Win" and not score_saved:
+                                time_taken = round(game.t // 15, 2)
+                                if score_saved == True:
+                                    hall_of_fame.add_score(time_taken, game.game_width, game.game_height, game.num_mine, player_name)
+                                player_name = ""
+                                
+                                print(f"Saving {player_name}")
+
                             game.game_state = "Playing"
                             current_screen = "main_menu"
-                        # Handle name input when player wins
-                        elif game.game_state == "Win" and event.key != pygame.K_RETURN:
-                            if event.key == pygame.K_BACKSPACE:
-                                player_name = player_name[:-1]
-                            elif len(player_name) < 10 and event.unicode.isalnum():
-                                player_name += event.unicode
-                            game.player_name = player_name  # Update name in game core
+                            score_saved = False
+                            gameDisplay = pygame.display.set_mode((MENU_WIDTH, MENU_HEIGHT))  
+                            game_start_time = time.time()  # Reset start time for the next game
+
+                            gameDisplay = pygame.display.set_mode((MENU_WIDTH, MENU_HEIGHT))
+
+                        elif game.game_state == "Win":
+                            # When a key is pressed after winning
+                            if event.key != pygame.K_RETURN:  # Handle player name input
+                                if event.key == pygame.K_BACKSPACE:
+                                    player_name = player_name[:-1]  # Remove a character
+                                elif len(player_name) < 10 and event.unicode.isalnum():  # Add a character
+                                    player_name += event.unicode
+                                game.player_name = player_name  # Update the player's name
+                                score_saved = True
+
                 else:
                     if event.type == pygame.MOUSEBUTTONUP:
-                        game.handle_click(event.pos, event.button, gameDisplay)
-                        game.check_win()  # Now no arguments needed
+                        if time.time() - game_start_time > 0.5:
+                            game.handle_click(event.pos, event.button, gameDisplay)
+                            game.check_win()  # Now no arguments needed
                         
             elif current_screen == "hall_of_fame":
                 result = hall_of_fame.handle_event(event)
                 if result == "menu":
                     current_screen = "main_menu"
+                    gameDisplay = pygame.display.set_mode((MENU_WIDTH, MENU_HEIGHT))  # Reset main menu size
 
         # Drawing
         if current_screen == "main_menu":
@@ -122,7 +159,7 @@ def main():
             pygame.display.update()
         elif current_screen == "hall_of_fame":
             hall_of_fame.draw()
-            
+        
         clock.tick(15)
     
     pygame.quit()

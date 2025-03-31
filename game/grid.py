@@ -41,15 +41,18 @@ class Grid:
                     gameDisplay.blit(sprites["Grid"], self.rect)
 
     def revealGrid(self, grid, game_width, game_height):
-        self.clicked = True
-        if self.val == 0:
-            for x in range(-1, 2):
-                if 0 <= self.xGrid + x < game_width:
+        # Only reveal if not already clicked and not flagged
+        if not self.clicked and not self.flag:
+            self.clicked = True
+            if self.val == 0:  # If empty cell, reveal neighbors
+                for x in range(-1, 2):
                     for y in range(-1, 2):
-                        if 0 <= self.yGrid + y < game_height:
-                            if not grid[self.yGrid + y][self.xGrid + x].clicked:
-                                grid[self.yGrid + y][self.xGrid + x].revealGrid(grid, game_width, game_height)
-
+                        nx, ny = self.xGrid + x, self.yGrid + y
+                        if 0 <= nx < game_width and 0 <= ny < game_height:
+                            neighbor = grid[ny][nx]
+                            if not neighbor.clicked and not neighbor.flag:
+                                neighbor.revealGrid(grid, game_width, game_height)
+                                
     def updateValue(self, grid, game_width, game_height):
         if self.val != -1:
             for x in range(-1, 2):
